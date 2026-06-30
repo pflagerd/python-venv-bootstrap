@@ -5,6 +5,18 @@ Author: Your Name
 Date: 2026-06-30
 """
 
+""" Rationale
+
+if __name__ == "__main__":: Ensures your script only runs code when executed directly, not when imported as a module by another script.
+
+argparse: Makes it easy to pass variables/flags from the terminal right out of the box.
+
+logging instead of print(): Better for production because it automatically includes timestamps, severity levels (INFO, DEBUG, ERROR), and can easily be redirected to a file later.
+
+Graceful Exit handling: The try/except block catches Ctrl+C (KeyboardInterrupt) and unexpected crashes cleanly without printing ugly tracebacks to the user unless you want them to.
+"""
+
+
 import argparse
 import logging
 import sys
