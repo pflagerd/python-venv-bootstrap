@@ -20,6 +20,8 @@ Graceful Exit handling: The try/except block catches Ctrl+C (KeyboardInterrupt) 
 import argparse
 import logging
 import sys
+import torch
+import soundfile as sf
 
 # Configure logging
 logging.basicConfig(
@@ -67,6 +69,23 @@ def main():
         logger.info(f"Processing input file: {args.input}")
     else:
         logger.info("No input file provided. Running default logic.")
+
+    model, utils = torch.hub.load(repo_or_dir='snakers4/silero-vad', model='silero_vad')
+    (get_speech_timestamps, save_audio, read_audio, VADIterator, collect_chunks) = utils
+
+    # Load your audio file (Must be 16000Hz or 8000Hz)
+    audio_path = 'V2026-01-15-13-03-16.WAV'
+    wav = read_audio(audio_path, sampling_rate=16000)
+
+    # Get speech timestamps
+    speech_timestamps = get_speech_timestamps(wav, model, sampling_rate=16000)
+
+    if speech_timestamps:
+        print(f"Speech detected! Found {len(speech_timestamps)} segments of speech.")
+        for segment in speech_timestamps:
+            print(f"  From {segment['start'] / 16000:.2f}s to {segment['end'] / 16000:.2f}s")
+    else:
+        print("No speech detected (just silence or noise).")
 
     logger.info("Script completed successfully.")
 
