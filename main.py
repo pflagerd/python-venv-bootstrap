@@ -36,17 +36,16 @@ def parse_arguments():
     """Parses command-line arguments."""
     parser = argparse.ArgumentParser(description="Script description goes here.")
 
-    # Example arguments
-    parser.add_argument(
-        "-i", "--input",
-        type=str,
-        required=False,
-        help="Path to the input file"
-    )
     parser.add_argument(
         "-v", "--verbose",
         action="store_true",
         help="Increase output verbosity"
+    )
+
+    parser.add_argument(
+        "filenames",
+        nargs="+",
+        help="One or more filenames to process"
     )
 
     return parser.parse_args()
@@ -62,11 +61,9 @@ def main():
 
     logger.info("Starting script execution...")
 
-    # Your code logic goes here
-    if args.input:
-        logger.info(f"Processing input file: {args.input}")
-    else:
-        logger.info("No input file provided. Running default logic.")
+    for filename in args.filenames:
+        # Your code logic goes here
+        logger.info(f"Processing input file: {filename}")
 
     logger.info("Script completed successfully.")
 
