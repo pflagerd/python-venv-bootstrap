@@ -38,17 +38,16 @@ def parse_arguments():
     """Parses command-line arguments."""
     parser = argparse.ArgumentParser(description="Script description goes here.")
 
-    # Example arguments
-    parser.add_argument(
-        "-i", "--input",
-        type=str,
-        required=False,
-        help="Path to the input file"
-    )
     parser.add_argument(
         "-v", "--verbose",
         action="store_true",
         help="Increase output verbosity"
+    )
+
+    parser.add_argument(
+        "filenames",
+        nargs="+",
+        help="One or more filenames to process"
     )
 
     return parser.parse_args()
@@ -62,32 +61,28 @@ def main():
         logger.setLevel(logging.DEBUG)
         logger.debug("Verbose mode enabled.")
 
-    logger.info("Starting script execution...")
+    for filename in args.filenames:
+        # Your code logic goes here
+        if filename:
+            logger.info(f"Processing input file: {filename}")
+        else:
+            logger.info("No input file provided. Running default logic.")
 
-    # Your code logic goes here
-    if args.input:
-        logger.info(f"Processing input file: {args.input}")
-    else:
-        logger.info("No input file provided. Running default logic.")
+        model, utils = torch.hub.load(repo_or_dir='snakers4/silero-vad', model='silero_vad')
+        (get_speech_timestamps, save_audio, read_audio, VADIterator, collect_chunks) = utils
 
-    model, utils = torch.hub.load(repo_or_dir='snakers4/silero-vad', model='silero_vad')
-    (get_speech_timestamps, save_audio, read_audio, VADIterator, collect_chunks) = utils
+        # Load your audio file (Must be 16000Hz or 8000Hz)
+        wav = read_audio(filename, sampling_rate=16000)
 
-    # Load your audio file (Must be 16000Hz or 8000Hz)
-    audio_path = 'V2026-01-15-13-03-16.WAV'
-    wav = read_audio(audio_path, sampling_rate=16000)
+        # Get speech timestamps
+        speech_timestamps = get_speech_timestamps(wav, model, sampling_rate=16000)
 
-    # Get speech timestamps
-    speech_timestamps = get_speech_timestamps(wav, model, sampling_rate=16000)
-
-    if speech_timestamps:
-        print(f"Speech detected! Found {len(speech_timestamps)} segments of speech.")
-        for segment in speech_timestamps:
-            print(f"  From {segment['start'] / 16000:.2f}s to {segment['end'] / 16000:.2f}s")
-    else:
-        print("No speech detected (just silence or noise).")
-
-    logger.info("Script completed successfully.")
+        if speech_timestamps:
+            print(f"Speech detected in {filename}! Found {len(speech_timestamps)} segments of speech.")
+            for segment in speech_timestamps:
+                print(f"  From {segment['start'] / 16000:.2f}s to {segment['end'] / 16000:.2f}s")
+        else:
+            print("No speech detected in {filename} (just silence or noise).")
 
     return 0
 
