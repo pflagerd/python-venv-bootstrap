@@ -20,9 +20,9 @@ if ! [ -d .venv/ ]; then
   python3 -m venv .venv
 fi
 
- .venv/bin/pip freeze > ./.SETMEUP-913912f2-b5f8-44b4-bef6-0f1b06f8d073
- if ! diff requirements.txt ./.SETMEUP-913912f2-b5f8-44b4-bef6-0f1b06f8d073; then
-   .venv/bin/pip install -r requirements.txt || (echo "Something went wrong pip installing requirements.txt" && exit 1)
- fi
+.venv/bin/pip freeze > ./.SETMEUP
+if ! diff requirements.txt ./.SETMEUP; then
+ .venv/bin/pip install -r requirements.txt || (echo "Something went wrong pip installing requirements.txt" && exit 1)
+fi
 
 popd >/dev/null
