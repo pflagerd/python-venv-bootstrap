@@ -66,7 +66,7 @@ def main():
         if filename:
             logger.info(f"Processing input file: {filename}")
         else:
-            logger.info("No input file provided. Running default logic.")
+            logger.info("No input file provided.")
 
         model, utils = torch.hub.load(repo_or_dir='snakers4/silero-vad', model='silero_vad')
         (get_speech_timestamps, save_audio, read_audio, VADIterator, collect_chunks) = utils
@@ -79,8 +79,23 @@ def main():
 
         if speech_timestamps:
             print(f"Speech detected in {filename}! Found {len(speech_timestamps)} segments of speech.")
-            for segment in speech_timestamps:
-                print(f"  From {segment['start'] / 16000:.2f}s to {segment['end'] / 16000:.2f}s")
+            # for segment in speech_timestamps:
+            #     print(f"  From {int(segment['start'] / 960000)}:{segment['start'] / 16000 - int(segment['start'] / 960000) * 60.:.1f} to {int(segment['end'] / 960000)}:{segment['end'] / 16000 - int(segment['end'] / 960000) * 60 :.1f}: {segment['start'] / 16000:.1f} {segment['end'] / 16000 - segment['start'] / 16000:.1f}")
+            if len(speech_timestamps) == 1:
+                print(f"  From {int(segment['start'] / 960000)}:{segment['start'] / 16000 - int(segment['start'] / 960000) * 60.:.1f} to {int(segment['end'] / 960000)}:{segment['end'] / 16000 - int(segment['end'] / 960000) * 60 :.1f}: {segment['start'] / 16000:.1f} {segment['end'] / 16000 - segment['start'] / 16000:.1f}")
+            else:
+                start = int(speech_timestamps[0]['start'] / 16000)
+                last_segment_start = start
+                last_segment_end = speech_timestamps[0]['end'] / 16000
+                for i in range(1, len(speech_timestamps)):
+                    if speech_timestamps[i]['start'] / 16000 - last_segment_start <= 10:
+                        last_segment_start = speech_timestamps[i]['start'] / 16000
+                        last_segment_end = speech_timestamps[i]['end'] / 16000
+                    else:
+                        print(f"ffplay -ss {start} -t {last_segment_end - start} -autoexit -nodisp \"{filename}\"")
+                        start = int(speech_timestamps[i]['start'] / 16000)
+                        last_segment_start = start
+                        last_segment_end = speech_timestamps[i]['end'] / 16000
         else:
             print("No speech detected in {filename} (just silence or noise).")
 
